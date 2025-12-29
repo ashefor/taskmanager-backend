@@ -12,8 +12,8 @@ export default new DataSource({
   username: process.env.MYSQL_URL ? undefined : process.env.MYSQLUSER || 'root',
   password: process.env.MYSQL_URL ? undefined : process.env.MYSQLPASSWORD || '',
   database: process.env.MYSQL_URL ? undefined : process.env.MYSQLDATABASE || 'taskmanager',
-  entities: ['src/**/*.entity.ts'],
-  migrations: ['src/migrations/*.ts'],
+  entities: [__dirname + '/src/**/*.entity{.ts,.js}'],
+  migrations: [__dirname + '/src/migrations/*{.ts,.js}'],
   ssl: process.env.NODE_ENV === 'production' 
     ? { rejectUnauthorized: false } 
     : false,

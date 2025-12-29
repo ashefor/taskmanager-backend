@@ -14,7 +14,7 @@ export const getDatabaseConfig = (
     url: mysqlUrl,
     // Fallback to individual variables if MYSQL_URL not available
     host: mysqlUrl ? undefined : configService.get('MYSQLHOST', 'localhost'),
-    port: mysqlUrl ? undefined : configService.get('MYSQLPORT', 3306),
+    port: mysqlUrl ? undefined : parseInt(configService.get('MYSQLPORT', '3306'), 10),
     username: mysqlUrl ? undefined : configService.get('MYSQLUSER', 'root'),
     password: mysqlUrl ? undefined : configService.get('MYSQLPASSWORD', ''),
     database: mysqlUrl ? undefined : configService.get('MYSQLDATABASE', 'taskmanager'),
