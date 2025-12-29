@@ -23,10 +23,27 @@ async function bootstrap() {
 
   const config = new DocumentBuilder()
     .setTitle('Task Manager API')
-    .setDescription('The Task Manager API description')
+    .setDescription('A comprehensive task management system API with user authentication, task creation, assignment, commenting, and activity tracking.')
     .setVersion('1.0')
-    .addTag('tasks')
-    .addBearerAuth()
+    .setContact(
+      'Task Manager Support',
+      'https://github.com/ashefor/taskmanager-backend',
+      'support@taskmanager.com'
+    )
+    .addTag('auth', 'Authentication endpoints - login, registration, password management')
+    .addTag('users', 'User management endpoints')
+    .addTag('tasks', 'Task management endpoints - CRUD operations, comments, attachments')
+    .addTag('activity-log', 'Activity log and audit trail endpoints')
+    .addBearerAuth(
+      {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+        description: 'Enter JWT token',
+        in: 'header',
+      },
+      'access-token',
+    )
     .build();
   const documentFactory = () => SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, documentFactory);
