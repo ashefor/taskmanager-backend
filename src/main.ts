@@ -34,16 +34,7 @@ async function bootstrap() {
     .addTag('users', 'User management endpoints')
     .addTag('tasks', 'Task management endpoints - CRUD operations, comments, attachments')
     .addTag('activity-log', 'Activity log and audit trail endpoints')
-    .addBearerAuth(
-      {
-        type: 'http',
-        scheme: 'bearer',
-        bearerFormat: 'JWT',
-        description: 'Enter JWT token',
-        in: 'header',
-      },
-      'access-token',
-    )
+    .addBearerAuth()
     .build();
   const documentFactory = () => SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, documentFactory);
