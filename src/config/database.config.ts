@@ -1,5 +1,6 @@
 import { ConfigService } from '@nestjs/config';
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
+import { join } from 'path';
 
 export const getDatabaseConfig = (
   configService: ConfigService,
@@ -18,10 +19,10 @@ export const getDatabaseConfig = (
     username: mysqlUrl ? undefined : configService.get('MYSQLUSER', 'root'),
     password: mysqlUrl ? undefined : configService.get('MYSQLPASSWORD', ''),
     database: mysqlUrl ? undefined : configService.get('MYSQLDATABASE', 'taskmanager'),
-    entities: [__dirname + '/../**/*.entity{.ts,.js}'],
+    entities: [join(__dirname, '..', '**', '*.entity{.ts,.js}')],
     synchronize: false, // NEVER true in production - use migrations
     logging: !isProduction,
-    migrations: [__dirname + '/../migrations/*{.ts,.js}'],
+    migrations: [join(__dirname, '..', 'migrations', '*{.ts,.js}')],
     migrationsRun: true, // Auto-run migrations on startup
     ssl: isProduction
       ? {
