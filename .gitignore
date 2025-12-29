@@ -41,6 +41,15 @@ lerna-debug.log*
 .env.test.local
 .env.production.local
 .env.local
+.env.development
+.env.production
+
+# Don't ignore examples
+!.env.example
+!.env.production.example
+
+# Railway
+.railway
 
 # temp directory
 .temp

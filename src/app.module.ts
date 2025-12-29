@@ -2,11 +2,11 @@ import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { typeOrmConfig } from './config/typeorm.config';
 import { UsersModule } from './modules/users/users.module';
 import { DataSource } from 'typeorm';
 import { ScheduleModule } from '@nestjs/schedule';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { getDatabaseConfig } from './config/database.config';
 import { MailModule } from './modules/mail/mail.module';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { AuthModule } from './modules/auth/auth.module';
@@ -23,12 +23,15 @@ import { ActivityLogModule } from './modules/activity-log/activity-log.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forRoot(typeOrmConfig),
-    ScheduleModule.forRoot(),
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: '.env',
+      envFilePath: `.env.${process.env.NODE_ENV || 'development'}`,
     }),
+    TypeOrmModule.forRootAsync({
+      inject: [ConfigService],
+      useFactory: getDatabaseConfig,
+    }),
+    ScheduleModule.forRoot(),
     ThrottlerModule.forRoot([{
       ttl: 60, // 1 minute window
       limit: 5, // max 5 requests per minute per IP
