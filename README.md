@@ -25,6 +25,33 @@
 
 [Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
 
+## Deployment
+
+This application is configured for deployment on Railway. See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) for detailed instructions.
+
+### Quick Deploy
+
+1. Fork this repository
+2. Sign up at [railway.app](https://railway.app)
+3. Create new project from GitHub repo
+4. Add MySQL database
+5. Configure environment variables (see .env.production.example)
+6. Deploy!
+
+### Environment Variables
+
+See `.env.example` for all required environment variables.
+
+### Database Migrations
+
+```bash
+# Generate migration
+npm run migration:generate -- src/migrations/MigrationName
+
+# Run migrations
+npm run migration:run
+```
+
 ## Project setup
 
 ```bash
