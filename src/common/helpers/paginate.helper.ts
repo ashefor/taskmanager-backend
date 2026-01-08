@@ -13,6 +13,7 @@ interface PaginateOptions<T extends ObjectLiteral> {
     filters?: Record<string, any>; // 👈 new
     transform?: (entity: T) => any;
     includeDeleted?: boolean;
+    skipPaginateCount?: boolean;
 }
 
 export async function PaginateRepositoryHelper<T>({
@@ -25,8 +26,17 @@ export async function PaginateRepositoryHelper<T>({
     defaultSort = 'createdAt',
     filters = {},
     transform,
-    includeDeleted = false
-}: PaginateOptions<T | any>) {
+    includeDeleted = false,
+    skipPaginateCount = false,
+}: PaginateOptions<T | any>): Promise<T[] | {
+    items: T[];
+    pagination: {
+        total: number;
+        page: number;
+        limit: number;
+        totalPages: number;
+    };
+}> {
     const { page = 1,
         limit = 10, search, sortBy, sortOrder,
         start_date,
@@ -63,7 +73,7 @@ export async function PaginateRepositoryHelper<T>({
 
     // 🔁 Sorting
     const sortColumn = sortBy ? `${alias}.${sortBy}` : `${alias}.${defaultSort}`;
-    qb.orderBy(sortColumn, sortOrder?.toUpperCase() === 'ASC' ? 'ASC' : 'DESC');
+    qb.orderBy(sortColumn, sortOrder?.toUpperCase() === 'ASC' ? 'ASC' : 'DESC').addOrderBy('task.position', 'ASC');
 
     // Include relations if specified
     for (const relation of relations) {
@@ -74,7 +84,7 @@ export async function PaginateRepositoryHelper<T>({
     if (start_date && end_date) {
         qb.where('task.createdAt BETWEEN :start_date AND :end_date', {
             start_date: new Date(start_date).toISOString(),
-            end_date : new Date(end_date).toISOString(),
+            end_date: new Date(end_date).toISOString(),
         }).getMany();
     } else if (start_date) {
         qb.where('task.createdAt >= :start_date', { start_date }).getMany();
@@ -83,18 +93,32 @@ export async function PaginateRepositoryHelper<T>({
     }
 
 
-    qb.skip(skip).take(limit);
+    if (!skipPaginateCount) {
+        qb.skip(skip).take(limit);
+        const [items, total] = await qb.getManyAndCount();
+        const transformFn = typeof transform === 'function' ? transform : undefined;
+        const transformedItems = items.map((t) => transformFn ? transformFn(t) : t);
+        return {
+            items: transformedItems,
+            pagination: {
+                total,
+                page,
+                limit,
+                totalPages: Math.ceil(total / limit),
+            },
+        };
+    }
 
-    const [items, total] = await qb.getManyAndCount();
+    const items = await qb.getMany();
     const transformFn = typeof transform === 'function' ? transform : undefined;
-    const transformedItems = items.map((t) => transformFn ? transformFn(t) : t);
-    return {
-        items: transformedItems,
-        pagination: {
-            total,
-            page,
-            limit,
-            totalPages: Math.ceil(total / limit),
-        },
-    };
+    return items.map((t) => transformFn ? transformFn(t) : t);
+    // return {
+    //     items: transformedItems,
+    //     pagination: {
+    //         total: transformedItems.length,
+    //         page,
+    //         limit,
+    //         totalPages: 1,
+    //     },
+    // };
 }

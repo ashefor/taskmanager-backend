@@ -30,8 +30,8 @@ export class TasksController {
             properties: {
                 title: { type: 'string', example: 'Implement user authentication' },
                 description: { type: 'string', example: 'Create login and registration endpoints' },
-                status: { type: 'string', enum: ['pending', 'in-progress', 'completed', 'cancelled'] },
-                priority: { type: 'string', enum: ['low', 'medium', 'high', 'critical'] },
+                status: { type: 'string', enum: ['BACKLOG', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED'] },
+                priority: { type: 'string', enum: ['LOW', 'MEDIUM', 'HIGH'] },
                 dueDate: { type: 'string', format: 'date-time' },
                 estimatedAt: { type: 'string', format: 'date-time' },
                 assigneeId: { type: 'string', example: '550e8400-e29b-41d4-a716-446655440000' },

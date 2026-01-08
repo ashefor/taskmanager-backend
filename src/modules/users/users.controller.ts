@@ -1,5 +1,5 @@
 import { Body, Controller, Get, Param, Post, Put, Query } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBody, ApiBearerAuth, ApiParam, ApiQuery } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiBody, ApiBearerAuth, ApiParam } from '@nestjs/swagger';
 
 import { CreateUserDto } from './dto/create-user.dto';
 import { UsersService } from './users.service';
@@ -42,7 +42,8 @@ export class UsersController {
     })
     @ApiResponse({ status: 401, description: 'Unauthorized' })
     async getAllUsers(@Query() query: PaginationQueryDto): Promise<any> {
-        return this.userService.getAllUsers(query);
+        const response =  await this.userService.getAllUsers(query);
+        return ResponseHelper.success(response, 'SUCCESS', 'Users fetched successfully');
     }
 
     @ApiBearerAuth()

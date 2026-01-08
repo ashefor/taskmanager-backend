@@ -1,6 +1,7 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsString, IsOptional, IsDateString, IsEnum, IsNotEmpty } from 'class-validator';
-import type { taskPriority, taskStatus } from 'src/common/constants/models';
+import { TaskPriority, TaskStatus } from 'src/common/constants/models';
+// import type { taskPriority, taskStatus } from 'src/common/constants/models';
 
 export class CreateTaskDto {
     @ApiProperty({
@@ -22,23 +23,23 @@ export class CreateTaskDto {
 
     @ApiPropertyOptional({
         description: 'Current status of the task',
-        enum: ['pending', 'in-progress', 'completed', 'cancelled'],
-        example: 'pending',
+        enum: TaskStatus,
+        example: TaskStatus.BACKLOG,
     })
     @IsOptional()
     @IsString()
-    @IsEnum(['pending', 'in-progress', 'completed', 'cancelled'])
-    status?: taskStatus;
+    @IsEnum(TaskStatus)
+    status?: TaskStatus;
 
     @ApiPropertyOptional({
         description: 'Priority level of the task',
-        enum: ['low', 'medium', 'high', 'critical'],
-        example: 'high',
+        enum: TaskPriority,
+        example: TaskPriority.HIGH,
     })
     @IsOptional()
     @IsString()
-    @IsEnum(['low', 'medium', 'high', 'critical'])
-    priority?: taskPriority;
+    @IsEnum(TaskPriority)
+    priority?: TaskPriority;
 
     @ApiPropertyOptional({
         description: 'Due date for the task',

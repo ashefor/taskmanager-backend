@@ -21,21 +21,21 @@ export class Task extends BaseEntity {
 
     @ApiProperty({
         description: 'Current status of the task',
-        enum: ['pending', 'in-progress', 'completed', 'cancelled'],
-        example: 'pending',
-        default: 'pending',
+        enum: ['BACKLOG', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED'],
+        example: 'BACKLOG',
+        default: 'BACKLOG',
     })
-    @Column({ default: 'pending' })
-    status: 'pending' | 'in-progress' | 'completed' | 'cancelled';
+    @Column({ default: 'BACKLOG' })
+    status: 'BACKLOG' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED';
 
     @ApiPropertyOptional({
         description: 'Priority level of the task',
-        enum: ['low', 'medium', 'high', 'critical'],
-        example: 'high',
-        default: 'low',
+        enum: ['LOW', 'MEDIUM', 'HIGH'],
+        example: 'HIGH',
+        default: 'LOW',
     })
-    @Column({ nullable: true, default: 'low' })
-    priority?: 'low' | 'medium' | 'high' | 'critical';
+    @Column({ nullable: true, default: 'LOW' })
+    priority?: 'LOW' | 'MEDIUM' | 'HIGH';
 
     @ApiPropertyOptional({
         description: 'Due date for the task',
@@ -43,6 +43,13 @@ export class Task extends BaseEntity {
     })
     @Column({ type: 'timestamp', nullable: true })
     dueDate?: Date;
+
+    @ApiProperty({
+        description: 'Position of the task in the backlog',
+        example: 1,
+    })
+    @Column({ type: 'integer' })
+    position: number;
 
     // @Column({ type: 'timestamp', nullable: true }) estimatedAt?: Date;
 

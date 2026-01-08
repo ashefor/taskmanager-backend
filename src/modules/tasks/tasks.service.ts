@@ -11,12 +11,13 @@ import { ResponseHelper } from 'src/common/helpers/response-helper';
 import { UpdateTaskStatusDto } from './dto/update-task-status.dto';
 import { TaskComment } from '../comments/comment.entity';
 import { CommentTaskDto } from './dto/comment-task.dto';
-import { PaginateRepositoryHelper } from 'src/common/helpers/paginate.helper';
 import { PaginationQueryDto } from 'src/common/helpers/dto/pagination-query.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
 import { sanitizeResponse } from 'src/common/utils/sanitize-response.util';
 import { ActivityLogService } from '../activity-log/activity-log.service';
 import { ActivityScope, ActivityType } from '../activity-log/activity-log.entity';
+import { PaginateRepositoryHelper } from 'src/common/helpers/paginate.helper';
+import { TaskStatus } from 'src/common/constants/models';
 
 @Injectable()
 export class TasksService {
@@ -53,14 +54,13 @@ export class TasksService {
 
         if (files && files.length > 0) {
             const attachments = files.map(file => {
-                const attachment = this.attachmentRepository.create({
+                return this.attachmentRepository.create({
                     filepath: file.path || '',
                     mimetype: file.mimetype,
                     filename: file.filename,
                     originalname: file.originalname,
                     task: savedTask,
                 });
-                return attachment
             });
             await this.attachmentRepository.save(attachments);
             savedTask.attachments = attachments
@@ -113,6 +113,7 @@ export class TasksService {
             searchFields: ['title', 'description'],
             alias: 'task',
             defaultSort: 'createdAt',
+            skipPaginateCount: true,
             // Map to include only attachment and comments count
             transform: (task) => ({
                 ...task,
@@ -122,19 +123,27 @@ export class TasksService {
                 comments: undefined
             })
         })
+
+        console.log(this.groupByStatus(results as Task[]))
         
         return results
+
+        // const [items, total] = await this.taskRepository.findAndCount({
+        //     relations: ['attachments', 'comments', 'assignee', 'createdBy'],
+        //     order: { createdAt: 'DESC' },
+        // });
+
+        // return items
     }
 
     async getAllDeletedTasks(query: PaginationQueryDto) {
         const { page = 1, limit = 10 } = query
-        const tasks = await this.taskRepository.find({
+        return await this.taskRepository.find({
             withDeleted: true,
             where: { deletedAt: Not(IsNull()) },
             skip: (page - 1) * limit,
             take: query.limit
         });
-        return tasks
     }
 
     async getTaskById(task_id: string, user: User) {
@@ -179,8 +188,7 @@ export class TasksService {
 
 
     async getTasksByUser(user_id: string) {
-        const tasks = this.taskRepository.find({ where: { createdBy: { uuid: user_id } }, relations: ['attachments'] });
-        return tasks
+        return this.taskRepository.find({ where: { createdBy: { uuid: user_id } }, relations: ['attachments'] });
     }
 
     async addCommentToTask(task_id: string, dto: CommentTaskDto, user: User): Promise<any> {
@@ -265,14 +273,13 @@ export class TasksService {
             throw new NotFoundException(ResponseHelper.fail('TASK_NOT_FOUND'));
         }
         const attachments = files.map(file => {
-            const attachment = this.attachmentRepository.create({
+            return this.attachmentRepository.create({
                 filepath: file.path || '',
                 mimetype: file.mimetype,
                 filename: file.filename,
                 originalname: file.originalname,
                 task: task,
             });
-            return attachment
         });
         await this.attachmentRepository.save(attachments);
 
@@ -284,8 +291,7 @@ export class TasksService {
     }
 
     async findTasksDueBefore(date: Date) {
-        const tasks = this.taskRepository.find({ where: { dueDate: LessThanOrEqual(date), reminderSent: false }, relations: ['assignee', 'createdBy'] });
-        return tasks
+       return this.taskRepository.find({ where: { dueDate: LessThanOrEqual(date), reminderSent: false }, relations: ['assignee', 'createdBy'] });
     }
 
     async markReminderSent(task_id: string,) {
@@ -294,11 +300,24 @@ export class TasksService {
             throw new NotFoundException(ResponseHelper.fail('TASK_NOT_FOUND'));
         }
 
-        (async () => {
-            await this.activityLogService.logActivity(ActivityScope.TASK, task_id, ActivityType.REMINDER_SENT, null,`Task Reminder Sent`);
+        await (async () => {
+          await this.activityLogService.logActivity(ActivityScope.TASK, task_id, ActivityType.REMINDER_SENT, null, `Task Reminder Sent`);
         })();
 
         return await this.taskRepository.update({ uuid: task_id }, { reminderSent: true });
     }
 
+    private groupByStatus(tasks: Task[]) {
+    return {
+      [TaskStatus.BACKLOG]: tasks.filter((t) => t.status === TaskStatus.BACKLOG),
+      [TaskStatus.IN_PROGRESS]: tasks.filter(
+        (t) => t.status === TaskStatus. IN_PROGRESS
+      ),
+      [TaskStatus.COMPLETED]: tasks.filter(
+        (t) => t.status === TaskStatus.COMPLETED
+      ),
+      [TaskStatus.CANCELLED]: tasks.filter((t) => t.status === TaskStatus.CANCELLED),
+    };
+  }
 }
+

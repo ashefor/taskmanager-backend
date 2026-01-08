@@ -6,8 +6,24 @@ import helmet from 'helmet';
 import { SanitizeHtmlPipe } from './common/pipes/sanitize-html.pipe';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
+const allowedOrigins = [
+  'http://localhost:3000',
+  'http://localhost:5173',
+  'http://localhost:4173',
+  'https://propel.molior.dev',
+  'http://localhost:8080'
+];
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  const isDevelopment = process.env.NODE_ENV !== 'production';
+  app.enableCors({
+    origin: isDevelopment
+      ? allowedOrigins
+      : process.env.FRONTEND_URL || 'https://propel.molior.dev',
+    credentials: true,
+    methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Accept', 'Authorization'],
+  });
   app.useGlobalFilters(new GlobalExceptionFilter());
   app.useGlobalPipes(
     new ValidationPipe({
@@ -19,7 +35,7 @@ async function bootstrap() {
   );
 
   // app.use(cookieParser());
-  app.use(helmet());
+  app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
 
   const config = new DocumentBuilder()
     .setTitle('Task Manager API')
